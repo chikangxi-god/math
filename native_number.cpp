@@ -26,5 +26,6 @@ std::ostream& operator<<(std::ostream& out, const native_number& n)
 		dot++;
 	}
 	delete[] str;
+	//std::cout << "<<() complete." << std::endl;
 	return out;
 }
