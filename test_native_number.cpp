@@ -9,6 +9,8 @@ int main()
 	uint32_t d = 1;
 	std::cin >> d;
 	last_clock = clock();
+	assert(native_number(4)*native_number(7)==native_number(28));
+	assert(native_number(31)!=native_number(32));
 	for (uint32_t i = 1; i <= d; i++)
 	{
 		sum = sum * native_number(i);
