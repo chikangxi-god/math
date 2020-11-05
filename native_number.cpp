@@ -363,4 +363,18 @@ std::ostream& operator<<(std::ostream& out, const native_number& n)
 	delete[] str;
 	return out;
 }
+std::istream& operator>>(std::istream& in, native_number& n)
+{
+	char d = 0;
+	n = native_number::zero();
+	assert_valid(n);
+	assert(n.is_zero());
+	while (isdigit(d=in.peek()))
+	{
+		n = n * 10 + in.get() - '0';
+	}
+	assert_valid(n);
+	return in;
+}
+
 #undef assert_valid

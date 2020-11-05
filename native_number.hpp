@@ -46,6 +46,7 @@ private:
 	std::unique_ptr<uint32_t[]> digits;
 
 	friend std::ostream& operator<<(std::ostream& out,const native_number& n);
+	friend std::istream& operator>>(std::istream& in, native_number& n);
 };
 
 #endif
