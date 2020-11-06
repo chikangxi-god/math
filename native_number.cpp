@@ -12,9 +12,11 @@
 #define assert_valid(x)
 #endif
 
+
 native_number::native_number()
 	:size(0),digits_number(0),digits(nullptr)
 {}
+
 native_number::native_number(const uint32_t n)
 	:size(1u),digits_number(n!=0),digits(new uint32_t[1])
 {
@@ -24,85 +26,82 @@ native_number::native_number(const uint32_t n)
 native_number::native_number(const native_number& n)
 	:size(n.size),digits_number(n.digits_number),digits(new uint32_t[size])
 {
-	//std::cout << "native_number(const native_number&) is being called." << std::endl;
 	for (uint32_t i = 0; i < digits_number; i++)
 	{
 		digits[i] = n.digits[i];
 	}
-	if (digits_number!=0&&digits[digits_number-1]==0)
-		std::cout << "digits_number = " <<digits_number <<std::endl;
 	assert_valid(*this);
 }
 native_number::native_number(native_number&& n)
 	:size(n.size),digits_number(n.digits_number),
 	digits(std::move(n.digits))
 {
-	//std::cout << "native_number(native_number&&) is being called." << std::endl;
 	n.digits_number = 0;
 	n.size = 0;
-	n.digits = nullptr;
 	assert_valid(*this);
 	assert_valid(n);
 }
+
+/*
+ * called function:
+ * 	bool native_number::operator==(const native_number&)
+ */
 native_number& native_number::operator=(const native_number& n)
 {
-	//std::cout << "native_number::operator=(const native_number&) is being called." << std::endl;
+	assert_valid(n);
+	assert_valid(*this);
 	if (size < n.digits_number)
 	{
-		//if (digits)delete[] digits;
-		//digits = nullptr;
-		
 		size = n.digits_number;
-		digits_number = n.digits_number;
 		digits = std::unique_ptr<uint32_t[]>(new uint32_t[size]);
 	}
+	digits_number = n.digits_number;
 	for (uint32_t i = 0; i < digits_number; i++)
 	{
 		digits[i] = n.digits[i];
 	}
-	//std::cout << "native_number::operator= will complete." << std::endl;
 	assert_valid(*this);
+	assert(this->operator==(n));
 	return *this;
 }
+
 native_number& native_number::operator=(native_number&& n)
 {
-	//std::cout << "native_number::operator=(native_number&&) is being called." << std::endl;
-	//if (digits)
-	//{
-		//std::cout << "digits in " << digits << " will delete." << std::endl;
-	//	delete[] digits;
-	//	digits = nullptr;
-	//}
-	//std::cout << "digits will be in " << n.digits << std::endl;
+	digits = std::move(n.digits);
 	size = n.size;
 	digits_number = n.digits_number;
-	digits = std::move(n.digits);
 
 	n.digits_number = 0;
 	n.size = 0;
-	n.digits = nullptr;
 	assert_valid(*this);
-	assert_valid(n);
 	return *this;
 }
 native_number::~native_number()
 {
 	size = 0;
 	digits_number = 0;
-	assert_valid(*this);
 }
 
 bool native_number::operator==(const native_number& n)const
 {
+	bool result = true;
 	if (digits_number!=n.digits_number)
 	{
-		return false;
+		result = false;
 	}
-	for (uint32_t i = 0; i < digits_number; i++)
+	else
 	{
-		if (digits[i]!=n.digits[i])return false;
+		for (uint32_t i = 0; i < digits_number; i++)
+		{
+			if (digits[i]!=n.digits[i])
+			{
+				result = false;
+				break;
+			}
+			assert(digits[i] == n.digits[i]);
+		}
 	}
-	return true;
+	return result;
 }
 
 
@@ -131,8 +130,11 @@ bool native_number::operator!=(const native_number& n)const
 	assert(result!=(*this==n));
 	return result;
 }
+
 native_number native_number::operator+(const native_number& added)const
 {
+	assert_valid(*this);
+	assert_valid(added);
 	native_number result;
 	if (digits_number > added.digits_number)
 	{
@@ -144,14 +146,15 @@ native_number native_number::operator+(const native_number& added)const
 	}
 	result.size = result.digits_number + 1;
 	result.digits = std::unique_ptr<uint32_t[]>(new uint32_t[result.size]);
-	uint32_t carry = 0;
+	uint64_t carry = 0;
 	for (uint32_t i = 0; i < result.digits_number; i++)
 	{
-		const uint32_t &a = (i<digits_number?digits[i]:0);
-		const uint32_t &b = (i<added.digits_number?added.digits[i]:0);
-		uint32_t &c = result.digits[i];
-		c = a + b + carry;
-		carry = (UINT32_MAX - a) < b + carry || b==UINT32_MAX&&carry>0;
+		const uint64_t a = (i<digits_number?digits[i]:0);
+		const uint64_t b = (i<added.digits_number?added.digits[i]:0);
+		uint64_t c = a + b + carry;
+		result.digits[i] = c;
+		carry = c >> 32;
+
 	}
 	if (carry)
 	{
@@ -159,80 +162,154 @@ native_number native_number::operator+(const native_number& added)const
 		result.digits_number++;
 	}
 	assert_valid(result);
-	assert_valid(*this);
-	assert_valid(added);
 	return result;
 }
+
+/*
+ * called function:
+ * 	native_number native_number::operator+(const native_number&)
+ */
 native_number& native_number::operator+=(const native_number& added)
 {
-	*this = *this + added;
-	assert_valid(*this);
 	assert_valid(added);
+	*this = this->operator+(added);
+	assert_valid(*this);
 	return *this;
 }
+
+/*
+ * when debug
+ * called function:
+ * 	native_number native_number::operator+(const native_number&)const
+ * 	bool native_number::operator==(const native_number&)const
+ */
 native_number native_number::operator-(const native_number& sub) const
 {
+	assert_valid(*this);
+	assert_valid(sub);
 	native_number result;
 	result.digits = std::unique_ptr<uint32_t[]>(new uint32_t[digits_number]);
 	result.size = digits_number;
-	result.digits_number = digits_number;
-	uint32_t barry = 0;
+	result.digits_number = 0;
+	uint64_t barry = 0;
 	for (uint32_t i = 0; i < digits_number; i++)
 	{
-		const uint32_t &a = digits[i];
-		const uint32_t &b = (i < sub.digits_number?sub.digits[i]:0);
-		result.digits[i] = a - b - barry;
+		const uint64_t a = digits[i];
+		const uint64_t b = (i < sub.digits_number?sub.digits[i]:0);
+		const uint64_t c = a - b - barry;
+		result.digits[i] = c&0xffffffff;
+		barry = c>>63;
 		if (result.digits[i])result.digits_number = i+1;
-		barry = (a<b+barry || b==UINT32_MAX&&barry>0);
 	}
 	if (barry)
 	{
-		std::cerr << " subtract overflow." << std::endl;
-		throw;
+		throw "sub overflow";
 	}
 	assert_valid(result);
+	assert(result + sub == *this);
+	return result;
+}
+
+/*
+ * called function:
+ * 	native_number native_number::operator-(const native_number&)
+ */
+native_number& native_number::operator-=(const native_number& b)
+{
 	assert_valid(*this);
-	assert_valid(sub);
+	assert_valid(b);
+	*this = *this - b;
+	assert_valid(*this);
+	return *this;
+}
+
+native_number multiply_version_0(const native_number& a, uint32_t b)
+{
+	native_number result = 0;
+	for (; b > 0; b--)
+	{
+		result = result + a;
+	}
 	return result;
 }
 native_number native_number::operator*(const uint32_t mul)const
 {
+	assert_valid(*this);
 	native_number result;
-	result.digits = std::unique_ptr<uint32_t[]>(new uint32_t[digits_number+1]);
-	result.size = digits_number+1;
-	result.digits_number = mul!=0?digits_number:0;
-	uint64_t r = 0;
-	uint64_t m = mul;
-	for (uint32_t i = 0; i < digits_number; i++)
+	if (mul == 0 || *this == 0)
 	{
-		r = digits[i] * m + (r>>32);
-		result.digits[i] = (uint32_t)(r&0xffffffff);
+		result = native_number::zero();
 	}
-	if (r>>32)
+	else
 	{
-		result.digits[result.digits_number] = (r>>32);
-		result.digits_number++;
+		result.digits = std::unique_ptr<uint32_t[]>(new uint32_t[digits_number+1]);
+		result.size = digits_number+1;
+		result.digits_number = digits_number;
+		uint64_t carry = 0;
+		uint64_t m = mul;
+		for (uint32_t i = 0; i < digits_number; i++)
+		{
+			carry = digits[i] * m + carry;
+			result.digits[i] = (uint32_t)(carry&0xffffffff);
+			carry >>= 32;
+		}
+		if (carry)
+		{
+			result.digits[result.digits_number] = carry;
+			result.digits_number++;
+		}
 	}
 	assert_valid(result);
-	assert_valid(*this);
+	//assert(result == multiply_version_0(*this,mul));
 	return result;
 }
+
+/*
+ * called function:
+ * 	native_number native_number::operator*(const uint32_t)
+ */
+native_number& native_number::operator*=(const uint32_t b)
+{
+	*this = this->operator*(b);
+	return *this;
+}
+
+/*
+ * called function:
+ * 	native_number::native_number()
+ * 	native_number& native_number::operator=(native_number&&)
+ * 	native_number native_number::operator*(const uint32_t)
+ * 	native_number native_number::operator<<(const uint32_t)
+ * 	native_number& native_number::operator+=(const native_number&)
+ */
 native_number native_number::operator*(const native_number& mul)const
 {
+	assert_valid(*this);
+	assert_valid(mul);
 	native_number result;
 	result.digits = std::unique_ptr<uint32_t[]>(new uint32_t[digits_number + mul.digits_number]);
 	result.size = digits_number + mul.digits_number;
 	result.digits_number = 0;
+	native_number r;
 	for (uint32_t i = 0; i < digits_number; i++)
 	{
-		native_number r = mul * digits[i];
+		r = mul * digits[i];
 		r = (r << (i*32));
 		result += r;
 	}
 	assert_valid(result);
-	assert_valid(*this);
-	assert_valid(mul);
 	return result;
+}
+
+/*
+ * called function:
+ * 	native_number& native_number::operator=(native_number&&)
+ * 	native_number native_number::operator*(const native_number&)
+ */
+native_number& native_number::operator*=(const native_number& b)
+{
+	*this = *this * b;
+	return *this;
 }
 native_number native_number::operator/(const uint32_t div)const
 {
@@ -259,6 +336,23 @@ native_number native_number::operator/(const uint32_t div)const
 	assert_valid(*this);
 	return result;
 }
+
+/*
+ * called function:
+ * 	native_number::native_number();
+ * 	native_number::native_number(native_number&&)
+ * 	native_number native_number::div(const native_number&,native_number&)
+ */
+native_number native_number::operator/(const native_number& b) const
+{
+	assert_valid(*this);
+	assert_valid(b);
+	native_number m;
+	native_number result = this->div(b,m);
+	assert_valid(m);
+	assert_valid(result);
+	return result;
+}
 uint32_t native_number::operator%(const uint32_t mod)const
 {
 	uint64_t r = 0;
@@ -269,6 +363,15 @@ uint32_t native_number::operator%(const uint32_t mod)const
 	}
 	assert_valid(*this);
 	return r;
+}
+native_number native_number::operator%(const native_number& b) const
+{
+	assert_valid(*this);
+	assert_valid(b);
+	native_number result;
+	this->div(b,result);
+	assert_valid(result);
+	return result;
 }
 native_number native_number::div(const uint32_t div, uint32_t* m) const
 {
@@ -296,7 +399,52 @@ native_number native_number::div(const uint32_t div, uint32_t* m) const
 	assert_valid(*this);
 	return result;
 }
-native_number native_number::operator<<(uint32_t shift) const
+native_number native_number::div(const native_number& n, native_number& m)const
+{
+	assert_valid(n);
+	assert(n!=0);
+	native_number result;
+	result.digits_number = 0;
+	result.size = digits_number-n.digits_number+1;
+	result.digits = std::unique_ptr<uint32_t[]>(new uint32_t[result.size]);
+	m = *this;
+	for (uint32_t i = result.size-1; i != UINT32_MAX; i--)
+	{
+		native_number pre_this = m >> (i*32);
+		uint32_t digit = 0;
+		if (pre_this.digits_number > n.digits_number || pre_this.digits_number==n.digits_number)
+		{
+			uint64_t a =0;
+		       	if (pre_this.digits_number == n.digits_number + 1)
+			{
+				a = (((uint64_t)pre_this.digits[n.digits_number])<<32)
+					|(pre_this.digits[n.digits_number-1]);
+			}
+			else if (pre_this.digits_number == n.digits_number)
+			{
+				a = pre_this.digits[n.digits_number-1];
+			}
+			else
+			{
+				throw;
+			}
+			uint32_t b = n.digits[n.digits_number-1];
+			digit = a/b;
+			while (pre_this < digit*n)digit--;	
+			assert(digit*n < pre_this || digit*n == pre_this);
+			assert((digit+1)*n > pre_this);
+		}
+		result.digits[i] = digit;
+		if (result.digits_number==0&&digit!=0)result.digits_number = i+1;
+		m -= (digit*n)<<i*32;
+	}
+	assert(result*n + m == *this);
+	assert_valid(result);
+	return result;
+}
+
+		
+native_number native_number::operator<<(const uint32_t shift) const
 {
 	native_number result;
 	if (digits_number==0)return native_number::zero();
@@ -322,6 +470,23 @@ native_number native_number::operator<<(uint32_t shift) const
 	assert_valid(*this);
 	return result;
 }
+native_number native_number::operator>>(const uint32_t shift)const
+{
+	native_number result;
+	if (digits_number <= shift/32)return native_number::zero();
+	uint32_t size = digits_number-shift/32;
+	result.digits = std::unique_ptr<uint32_t[]>(new uint32_t[size]);
+	result.size = size;
+	for (uint32_t i = 0; i < size; i++)
+	{
+		result.digits[i] = digits[i+shift/32];
+	}
+	result.digits_number = size;
+	assert_valid(result);
+	return result;
+}
+
+
 void native_number::append(uint32_t most)
 {
 	if (digits_number == size)
@@ -369,12 +534,57 @@ std::istream& operator>>(std::istream& in, native_number& n)
 	n = native_number::zero();
 	assert_valid(n);
 	assert(n.is_zero());
+	while (isspace(in.peek()))in.get();
 	while (isdigit(d=in.peek()))
 	{
 		n = n * 10 + in.get() - '0';
 	}
 	assert_valid(n);
 	return in;
+}
+native_number operator*(const uint32_t a,const native_number& b)
+{
+	return b*a;
+}
+native_number operator/(const uint32_t a,const native_number& b)
+{
+	return native_number(a)/b;
+}
+bool operator<(const native_number& n, const native_number& m)
+{
+	if (n.digits_number > m.digits_number)return false;
+	else if (n.digits_number < m.digits_number)return true;
+	else
+	{
+		for (uint32_t i = n.digits_number-1; i != UINT32_MAX; i--)
+		{
+			if (n.digits[i] > m.digits[i])return false;
+			else if (n.digits[i] < m.digits[i]) return true;
+		}
+	}
+	return false;
+}
+bool operator<=(const native_number& a, const native_number& b)
+{
+	return !(a>b);
+}
+bool operator>(const native_number& n, const native_number& m)
+{
+	if (n.digits_number > m.digits_number)return true;
+	else if (n.digits_number < m.digits_number)return false;
+	else
+	{
+		for (uint32_t i = n.digits_number-1; i!= UINT32_MAX; i--)
+		{
+			if (n.digits[i] > m.digits[i])return true;
+			else if (n.digits[i] < m.digits[i])return false;
+		}
+	}
+	return false;
+}
+bool operator>=(const native_number& a, const native_number& b)
+{
+	return !(a<b);
 }
 
 #undef assert_valid
