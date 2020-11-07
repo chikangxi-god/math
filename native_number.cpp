@@ -296,18 +296,18 @@ native_number& native_number::operator*=(const uint32_t b)
  * 	native_number native_number::operator<<(const uint32_t)
  * 	native_number& native_number::operator+=(const native_number&)
  */
-native_number native_number::operator*(const native_number& mul)const
+native_number operator*(const native_number& a,const native_number& mul)
 {
-	assert_valid(*this);
+	assert_valid(a);
 	assert_valid(mul);
 	native_number result;
-	result.digits = std::unique_ptr<uint32_t[]>(new uint32_t[digits_number + mul.digits_number]);
-	result.size = digits_number + mul.digits_number;
+	result.digits = std::unique_ptr<uint32_t[]>(new uint32_t[a.digits_number + mul.digits_number]);
+	result.size = a.digits_number + mul.digits_number;
 	result.digits_number = 0;
 	native_number r;
-	for (uint32_t i = 0; i < digits_number; i++)
+	for (uint32_t i = 0; i < a.digits_number; i++)
 	{
-		r = mul * digits[i];
+		r = mul * a.digits[i];
 		r = (r << (i*32));
 		result += r;
 	}

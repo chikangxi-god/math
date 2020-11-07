@@ -30,7 +30,7 @@ public:
 
 	native_number operator*(const uint32_t mul)const;
 	native_number& operator*=(const uint32_t);
-	native_number operator*(const native_number& mul)const;
+	//native_number operator*(const native_number& mul)const;
 	native_number& operator*=(const native_number&);
 	native_number operator/(const uint32_t div)const;
 	native_number operator/(const native_number&)const;
@@ -55,6 +55,7 @@ private:
 	std::unique_ptr<uint32_t[]> digits;
 
 	friend native_number operator*(const uint32_t, const native_number&);
+	friend native_number operator*(const native_number&, const native_number&);
 	friend native_number operator/(const uint32_t, const native_number&);
 	friend bool operator<(const native_number&, const native_number&);
 	friend bool operator<=(const native_number&, const native_number&);

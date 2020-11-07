@@ -2,7 +2,7 @@ test_file_path = test/test.cpp
 STATICLIB = libnn.a
 LIBPATH = /usr/local/lib/
 INCLUDEPATH = /usr/local/include/
-test/test : native_number_debug.o test/test.cpp whole_number_debug.o
+test/test : native_number_debug.o test/test.cpp whole_number_debug.o rational_number_debug.o
 	gcc -std=c++11 -pedantic -O0 -g -o test/test test/test.cpp \
 		native_number_debug.o whole_number_debug.o -lstdc++
 	./test/test
@@ -27,3 +27,9 @@ whole_number_debug.o : whole_number.cpp whole_number.hpp
 
 whole_number.o : whole_number.cpp whole_number.hpp
 	gcc -c -std=c++11 -pedantic -o whole_number.o whole_number.cpp
+
+rational_number_debug.o : rational_number.cpp rational_number.hpp
+	gcc -c -std=c++11 -pedantic -O0 -g -o rational_number_debug.o rational_number.cpp 
+
+rational_number.o : rational_number.cpp rational_number.hpp
+	gcc -c -std=c++11 -pedantic -o rational_number.o rational_number.cpp

@@ -9,6 +9,9 @@ whole_number::whole_number(whole_number&& b)
 	:is_negative(b.is_negative),n(std::move(b.n))
 {
 }
+whole_number::whole_number(const native_number& n)
+	:is_negative(0),n(n)
+{}
 
 whole_number& whole_number::operator=(const whole_number& b)
 {
@@ -22,6 +25,13 @@ whole_number& whole_number::operator=(whole_number&& b)
 	is_negative = b.is_negative;
 	n = std::move(b.n);
 	return *this;
+}
+whole_number whole_number::operator-()
+{
+	whole_number result;
+	result.n = n;
+	result.is_negative = !is_negative;
+	return result;
 }
 
 whole_number operator+(const whole_number& a, const whole_number& b)
@@ -149,3 +159,19 @@ bool operator<=(const whole_number& a, const whole_number& b)
 		||b.is_negative==1&&a.is_negative==1&&a.n>=b.n;
 	return result;
 }
+
+native_number abs(const whole_number& a)
+{
+	return a.n;
+}
+
+std::ostream& operator<<(std::ostream& out, const whole_number& a)
+{
+	if (a.is_negative)
+	{
+		out << '-';
+	}
+	out << a.n;
+	return out;
+}
+
