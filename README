@@ -1,0 +1,27 @@
+This ia a c++ library about math.
+Now it has only component of native number.
+To install this library:
+
+'make install'
+
+I only test this library in linux.
+
+
+To use this library:
+
+#include <native_number>
+
+and declare a variable:
+native_number n;
+
+The library has supplied +,-,*,/,%.
+So you could use native_number variable just as before.
+Such as:
+n + 23
+n += 38293
+n = n * 100
+n *= 10000
+
+
+mail	: chikangxi@hotmail.com
+qq	: 3067143918
