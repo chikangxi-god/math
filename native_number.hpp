@@ -12,6 +12,8 @@ class native_number
 public:
 	native_number();
 	native_number(uint32_t n);
+	native_number(uint64_t n);
+	native_number(int32_t);
 	native_number(const native_number& n);
 	native_number(native_number&& n);
 

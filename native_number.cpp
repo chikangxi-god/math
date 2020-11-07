@@ -23,6 +23,20 @@ native_number::native_number(const uint32_t n)
 	digits[0] = n;
 	assert_valid(*this);
 }
+native_number::native_number(uint64_t n)
+	:size(2u),digits_number(n==0?0:n<=UINT32_MAX?1:2),digits(new uint32_t[2])
+{
+	digits[0] = n;
+	digits[1] = n>>32;
+	assert_valid(*this);
+}
+native_number::native_number(int32_t n)
+	:size(1u),digits_number(n>0?1:0),digits(new uint32_t[1])
+{
+	if (n < 0)throw;
+	digits[0] = n;
+	assert_valid(*this);
+}
 native_number::native_number(const native_number& n)
 	:size(n.size),digits_number(n.digits_number),digits(new uint32_t[size])
 {
