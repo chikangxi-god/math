@@ -26,6 +26,26 @@ whole_number& whole_number::operator=(whole_number&& b)
 	n = std::move(b.n);
 	return *this;
 }
+whole_number& whole_number::operator+=(const whole_number& b)
+{
+	*this = *this + b;
+	return *this;
+}
+whole_number& whole_number::operator-=(const whole_number& b)
+{
+	*this = *this - b;
+	return *this;
+}
+whole_number& whole_number::operator*=(const whole_number& b)
+{
+	*this = *this * b;
+	return *this;
+}
+whole_number& whole_number::operator/=(const whole_number& b)
+{
+	*this = *this / b;
+	return *this;
+}
 whole_number whole_number::operator-()
 {
 	whole_number result;
@@ -165,6 +185,7 @@ native_number abs(const whole_number& a)
 	return a.n;
 }
 
+
 std::ostream& operator<<(std::ostream& out, const whole_number& a)
 {
 	if (a.is_negative)
@@ -174,4 +195,5 @@ std::ostream& operator<<(std::ostream& out, const whole_number& a)
 	out << a.n;
 	return out;
 }
+
 

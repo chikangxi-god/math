@@ -4,7 +4,8 @@ LIBPATH = /usr/local/lib/
 INCLUDEPATH = /usr/local/include/
 test/test : native_number_debug.o test/test.cpp whole_number_debug.o rational_number_debug.o
 	gcc -std=c++11 -pedantic -O0 -g -o test/test test/test.cpp \
-		native_number_debug.o whole_number_debug.o -lstdc++
+		native_number_debug.o whole_number_debug.o rational_number_debug.o \
+	       	-lstdc++
 	./test/test
 
 test/test.o : test/test.cpp native_number.hpp

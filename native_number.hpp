@@ -24,6 +24,8 @@ public:
 
 	native_number operator+(const native_number& added)const;
 	native_number& operator+=(const native_number& added);
+	native_number operator++();
+	const native_number& operator++(int);
 
 	native_number operator-(const native_number& sub) const;
 	native_number& operator-=(const native_number&);
@@ -34,10 +36,13 @@ public:
 	native_number& operator*=(const native_number&);
 	native_number operator/(const uint32_t div)const;
 	native_number operator/(const native_number&)const;
+	native_number& operator/=(const native_number&);
 	uint32_t operator%(const uint32_t mod)const;
 	native_number operator%(const native_number&)const;
 	bool operator==(const native_number& n)const;
 	bool operator!=(const native_number& n)const;
+	native_number operator<<(const uint32_t shift) const;
+	native_number operator>>(const uint32_t shift) const;
 
 	bool is_zero()const { return digits_number==0;}
 	static native_number zero(){ return native_number();}
@@ -45,8 +50,6 @@ public:
 private:
 	native_number div(const native_number& n, native_number& m) const;
 	native_number div(const uint32_t div, uint32_t* m) const;
-	native_number operator<<(const uint32_t shift) const;
-	native_number operator>>(const uint32_t shift) const;
 	uint32_t most_significant_digit() const {return digits_number>0?digits[digits_number-1]:0;}
 	void append(uint32_t most);
 

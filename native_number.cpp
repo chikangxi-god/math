@@ -1,6 +1,7 @@
 #include "native_number.hpp"
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 
 #ifndef NDEBUG
 #define assert_valid(x) (assert( \
@@ -40,10 +41,7 @@ native_number::native_number(int32_t n)
 native_number::native_number(const native_number& n)
 	:size(n.size),digits_number(n.digits_number),digits(new uint32_t[size])
 {
-	for (uint32_t i = 0; i < digits_number; i++)
-	{
-		digits[i] = n.digits[i];
-	}
+	std::copy(&(n.digits[0]),&(n.digits[digits_number]),&(digits[0]));
 	assert_valid(*this);
 }
 native_number::native_number(native_number&& n)
@@ -70,10 +68,7 @@ native_number& native_number::operator=(const native_number& n)
 		digits = std::unique_ptr<uint32_t[]>(new uint32_t[size]);
 	}
 	digits_number = n.digits_number;
-	for (uint32_t i = 0; i < digits_number; i++)
-	{
-		digits[i] = n.digits[i];
-	}
+	std::copy(&n.digits[0],&n.digits[n.digits_number], &digits[0]);
 	assert_valid(*this);
 	assert(this->operator==(n));
 	return *this;
@@ -88,6 +83,11 @@ native_number& native_number::operator=(native_number&& n)
 	n.digits_number = 0;
 	n.size = 0;
 	assert_valid(*this);
+	return *this;
+}
+native_number& native_number::operator/=(const native_number& b)
+{
+	*this = *this / b;
 	return *this;
 }
 native_number::~native_number()
@@ -186,8 +186,19 @@ native_number native_number::operator+(const native_number& added)const
 native_number& native_number::operator+=(const native_number& added)
 {
 	assert_valid(added);
-	*this = this->operator+(added);
+	*this = *this+(added);
 	assert_valid(*this);
+	return *this;
+}
+native_number native_number::operator++()
+{
+	native_number result = *this;
+	*this = *this + 1;
+	return result;
+}
+const native_number& native_number::operator++(int)
+{
+	*this = *this + 1;
 	return *this;
 }
 
@@ -479,7 +490,25 @@ native_number native_number::operator<<(const uint32_t shift) const
 			assert_valid(result);
 		}
 	}
-	else{throw;}
+	else
+	{
+		uint32_t d = shift/32;
+		uint32_t r = shift%32;
+		for (uint32_t i = 0; i < result.digits_number; i++)
+		{
+			result.digits[i] = 0;
+		}
+		for (uint32_t i = digits_number - 1; i != UINT32_MAX; i--)
+		{
+			result.digits[i+d+1] |= (digits[i]>>(32-r));
+			result.digits[i+d] |= (digits[i]<<r);
+		}
+		if (result.digits[result.digits_number-1]==0)
+		{
+			result.digits_number--;
+		}
+	}
+	if (result < UINT32_MAX)assert(result == (digits[0] << shift));
 	assert_valid(result);
 	assert_valid(*this);
 	return result;
@@ -521,6 +550,7 @@ void native_number::append(uint32_t most)
 
 std::ostream& operator<<(std::ostream& out, const native_number& n)
 {
+	assert_valid(n);
 	const uint32_t str_size = n.digits_number * 11;
 	char *str = new char[str_size];
 	uint32_t dot = str_size-1;
@@ -600,5 +630,6 @@ bool operator>=(const native_number& a, const native_number& b)
 {
 	return !(a<b);
 }
+
 
 #undef assert_valid
