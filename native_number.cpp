@@ -243,6 +243,7 @@ native_number& native_number::operator-=(const native_number& b)
 {
 	assert_valid(*this);
 	assert_valid(b);
+	assert(*this >= b);
 	*this = *this - b;
 	assert_valid(*this);
 	return *this;
@@ -285,7 +286,6 @@ native_number native_number::operator*(const uint32_t mul)const
 		}
 	}
 	assert_valid(result);
-	//assert(result == multiply_version_0(*this,mul));
 	return result;
 }
 
@@ -428,9 +428,20 @@ native_number native_number::div(const native_number& n, native_number& m)const
 {
 	assert_valid(n);
 	assert(n!=0);
+	if (*this < n)
+	{
+		m = *this;
+		return native_number::zero();
+	}
 	native_number result;
 	result.digits_number = 0;
+	assert(digits_number >= n.digits_number);
 	result.size = digits_number-n.digits_number+1;
+	if (result.size >100)
+	{
+		std::cout << "size = " << result.size << std::endl;
+	}
+	assert(result.size < 100);
 	result.digits = std::unique_ptr<uint32_t[]>(new uint32_t[result.size]);
 	m = *this;
 	for (uint32_t i = result.size-1; i != UINT32_MAX; i--)

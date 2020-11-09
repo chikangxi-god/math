@@ -6,7 +6,7 @@ test/test : native_number_debug.o test/test.cpp whole_number_debug.o rational_nu
 	gcc -std=c++11 -pedantic -O0 -g -o test/test test/test.cpp \
 		native_number_debug.o whole_number_debug.o rational_number_debug.o \
 	       	-lstdc++
-	./test/test
+	valgrind test/test
 
 test/test.o : test/test.cpp native_number.hpp
 	gcc -std=c++11 -pedantic -O0 -g -o test/test.o test/test.cpp
