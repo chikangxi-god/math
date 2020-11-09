@@ -12,6 +12,15 @@ whole_number::whole_number(whole_number&& b)
 whole_number::whole_number(const native_number& n)
 	:is_negative(0),n(n)
 {}
+whole_number::whole_number(native_number&& n)
+	:is_negative(0),n(std::move(n))
+{}
+whole_number::whole_number(bool is_negative, const native_number& n)
+	:is_negative(is_negative),n(n)
+{}
+whole_number::whole_number(bool is_negative, native_number&& n)
+	:is_negative(is_negative),n(std::move(n))
+{}
 
 whole_number& whole_number::operator=(const whole_number& b)
 {
@@ -196,4 +205,19 @@ std::ostream& operator<<(std::ostream& out, const whole_number& a)
 	return out;
 }
 
-
+std::istream& operator>>(std::istream& in, whole_number& b)
+{
+	while (isspace(in.peek())){in.get();}
+	if (in.peek()=='-')
+	{
+		b.is_negative = 1;
+		in.get();
+	}
+	while (isdigit(in.peek()))
+	{
+		uint32_t decimal_digit = in.get() - '0';
+		assert(decimal_digit >=0 && decimal_digit <= 9);
+		b.n = b.n * 10 + decimal_digit;
+	}
+	return in;
+}

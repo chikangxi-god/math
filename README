@@ -10,9 +10,13 @@ I only test this library in linux.
 To use this library:
 
 #include <native_number>
+#include <whole_number>
+#include <rational_number>
 
 and declare a variable:
 native_number n;
+whole_number z;
+rational_number x;
 
 The library has supplied +,-,*,/,%.
 So you could use native_number variable just as before.
@@ -22,6 +26,7 @@ n += 38293
 n = n * 100
 n *= 10000
 
+library name is 'libm.a'.
 
 mail	: chikangxi@hotmail.com
 qq	: 3067143918

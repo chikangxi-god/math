@@ -6,17 +6,17 @@
 class whole_number
 {
 private:
-
-public:
-
 	bool is_negative;
 	native_number n;
-
+public:
 	whole_number():is_negative(0),n(){}
 	whole_number(int32_t a):is_negative(a<0),n((uint32_t)(a>=0?a:-a)){}
 	whole_number(int64_t a):is_negative(a<0),n((uint64_t)(a>=0?a:-a)){}
 	whole_number(uint32_t b):is_negative(0),n(b){}
 	whole_number(const native_number&);
+	whole_number(native_number&&);
+	whole_number(bool is_negative, const native_number&);
+	whole_number(bool is_negative, native_number&&);
 	whole_number(const whole_number&);
 	whole_number(whole_number&&);
 
@@ -46,9 +46,7 @@ public:
 	
 
 	friend std::ostream& operator<<(std::ostream&, const whole_number&);
-	
-	friend class rational_number;
-
+	friend std::istream& operator>>(std::istream&, whole_number&);
 };
 
 #endif
