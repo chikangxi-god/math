@@ -5,6 +5,7 @@
 #include<cassert>
 #include<iostream>
 #include<memory>
+#include<tuple>
 
 
 class native_number
@@ -32,7 +33,6 @@ public:
 
 	native_number operator*(const uint32_t mul)const;
 	native_number& operator*=(const uint32_t);
-	//native_number operator*(const native_number& mul)const;
 	native_number& operator*=(const native_number&);
 	native_number operator/(const uint32_t div)const;
 	native_number operator/(const native_number&)const;
@@ -47,9 +47,10 @@ public:
 	bool is_zero()const { return digits_number==0;}
 	static native_number zero(){ return native_number();}
 
+
 private:
-	native_number div(const native_number& n, native_number& m) const;
-	native_number div(const uint32_t div, uint32_t* m) const;
+	std::tuple<native_number,native_number> div(const native_number& n) const;
+	std::tuple<native_number,uint32_t> div(const uint32_t div) const;
 	uint32_t most_significant_digit() const {return digits_number>0?digits[digits_number-1]:0;}
 	void append(uint32_t most);
 

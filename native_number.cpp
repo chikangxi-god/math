@@ -373,7 +373,8 @@ native_number native_number::operator/(const native_number& b) const
 	assert_valid(*this);
 	assert_valid(b);
 	native_number m;
-	native_number result = this->div(b,m);
+	native_number result;
+	std::tie(result,m) = this->div(b);
 	assert_valid(m);
 	assert_valid(result);
 	return result;
@@ -394,54 +395,65 @@ native_number native_number::operator%(const native_number& b) const
 	assert_valid(*this);
 	assert_valid(b);
 	native_number result;
-	this->div(b,result);
+	native_number q;
+	std::tie(q,result) = this->div(b);
 	assert_valid(result);
 	return result;
 }
-native_number native_number::div(const uint32_t div, uint32_t* m) const
+std::tuple<native_number,uint32_t> native_number::div(const uint32_t div) const
 {
-	native_number result;
-	result.digits = std::unique_ptr<uint32_t[]>(new uint32_t[digits_number]);
-	result.size = digits_number;
-	uint64_t r = 0;
-	for (uint32_t i = digits_number-1; i != UINT32_MAX; i--)
-	{
-		r = (r<<32) | digits[i];
-		result.digits[i] = r / div;
-		r = r % div;
-	}
-	*m = r;
-	result.digits_number = 0;
-	for (uint32_t i = digits_number-1; i != UINT32_MAX; i--)
-	{
-		if (result.digits[i])
-		{
-			result.digits_number = i+1;
-			break;
-		}
-	}
-	assert_valid(result);
 	assert_valid(*this);
-	return result;
+	assert(div!=0);
+	native_number q;
+	uint32_t m;
+	if (*this < div)
+	{
+		q = native_number::zero();
+		if (*this==0)m=0;
+		else m = this->digits[0];
+	}
+	else
+	{
+		uint64_t r = this->most_significant_digit();
+		uint32_t head = r / div;
+		r = r % div;
+		if (head>0)
+		{
+			q.digits = std::unique_ptr<uint32_t[]>(new uint32_t[digits_number]);
+			q.size = digits_number;
+			q.digits[digits_number-1] = head;
+		}
+		else
+		{
+			q.digits = std::unique_ptr<uint32_t[]>(new uint32_t[digits_number-1]);
+			q.size = digits_number-1;
+		}
+		assert(digits_number >= 1);
+		for (uint32_t i = digits_number-2; i != UINT32_MAX; i--)
+		{
+			r = (r<<32) | digits[i];
+			q.digits[i] = r / div;
+			r = r % div;
+		}
+		q.digits_number = q.size;
+		m = r;
+	}
+	assert_valid(q);
+	return std::make_tuple(q,m);
 }
-native_number native_number::div(const native_number& n, native_number& m)const
+std::tuple<native_number,native_number> native_number::div(const native_number& n)const
 {
 	assert_valid(n);
 	assert(n!=0);
 	if (*this < n)
 	{
-		m = *this;
-		return native_number::zero();
+		return std::make_tuple(native_number::zero(),*this);
 	}
+	native_number m;
 	native_number result;
 	result.digits_number = 0;
 	assert(digits_number >= n.digits_number);
 	result.size = digits_number-n.digits_number+1;
-	if (result.size >100)
-	{
-		std::cout << "size = " << result.size << std::endl;
-	}
-	assert(result.size < 100);
 	result.digits = std::unique_ptr<uint32_t[]>(new uint32_t[result.size]);
 	m = *this;
 	for (uint32_t i = result.size-1; i != UINT32_MAX; i--)
@@ -476,7 +488,7 @@ native_number native_number::div(const native_number& n, native_number& m)const
 	}
 	assert(result*n + m == *this);
 	assert_valid(result);
-	return result;
+	return std::make_tuple(result,m);
 }
 
 		
@@ -569,7 +581,7 @@ std::ostream& operator<<(std::ostream& out, const native_number& n)
 	while (!num.is_zero())
 	{
 		uint32_t d = 0;
-		num = num.div(10,&d);
+		std::tie(num,d) = num.div(10);
 		str[dot] = d + '0';
 		dot--;
 	}
@@ -641,6 +653,5 @@ bool operator>=(const native_number& a, const native_number& b)
 {
 	return !(a<b);
 }
-
 
 #undef assert_valid

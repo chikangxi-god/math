@@ -1,8 +1,8 @@
-#include"native_number.hpp"
-#include<iostream>
-
 #ifndef WHOLE_NUMBER_HPP
 #define WHOLE_NUMBER_HPP
+
+#include<iostream>
+#include"native_number.hpp"
 class whole_number
 {
 private:

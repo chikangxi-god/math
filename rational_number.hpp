@@ -1,9 +1,10 @@
+#ifndef RATIONAL_NUMBER_HPP
+#define RATIONAL_NUMBER_HPP
+
+
 #include "native_number.hpp"
 #include "whole_number.hpp"
 
-
-#ifndef RATIONAL_NUMBER_HPP
-#define RATIONAL_NUMBER_HPP
 class rational_number
 {
 private:

@@ -242,8 +242,8 @@ std::ostream& operator<<(std::ostream& out, const rational_number& b)
 {
 	out << (b.is_negative?"-":"");
 	out << b.numerator / b.denominator;
-	out << ".";
 	native_number f = b.numerator % b.denominator;
+	if (f!=0)out << ".";
 	for (uint32_t i = 0; i < 99&&f!=0; i++)
 	{
 		f *= 10;
