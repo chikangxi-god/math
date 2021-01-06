@@ -74,18 +74,20 @@ rational_number& rational_number::operator/=(const rational_number& b)
 	return *this;
 }
 
-static native_number prime_numbers[] = {2,3,5,7,11,13,17,23,29};
+static const native_number prime_numbers[] = {2,3,5,7,11,13,17,23,29};
 void rational_number::simplify()
 {
 	if (numerator % denominator == 0)
 	{
 		numerator /= denominator;
 		denominator = 1;
+		return;
 	}
 	else if (denominator % (numerator) == 0)
 	{
 		denominator /= numerator;
 		numerator = 1;
+		return;
 	}
 	for (uint32_t i = 0; i < sizeof(prime_numbers)/sizeof(prime_numbers[0])
 			&& prime_numbers[i] <= numerator
@@ -259,6 +261,7 @@ std::istream& operator>>(std::istream& in, rational_number& b)
 	in >> signed_numerator;
 	b.is_negative = signed_numerator.is_neg();
 	b.numerator = abs(signed_numerator);
+	b.denominator = 1;
 	if (in.peek()=='.')
 	{
 		in.get();
